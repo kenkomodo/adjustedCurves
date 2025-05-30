@@ -137,14 +137,15 @@ plot_risk_table.all <- function(plotdata, breaks,
                                 text_size=4.2, text_alpha=1, text_color="black",
                                 text_family="sans", text_fontface="plain",
                                 color_groups=FALSE, vjust=5,
-                                reverse_order=FALSE, custom_colors=NULL) {
+                                reverse_order=FALSE, custom_colors=NULL,
+                                x_expand=ggplot2::waiver()) {
 
   p <- ggplot2::ggplot(data=plotdata,
                        ggplot2::aes(x=.data$time, y=1, label=.data$est)) +
     ggplot2::geom_text(size=text_size, alpha=text_alpha, color=text_color,
-                       family=text_family, fontface=text_fontface) +
+                       family=text_family, fontface=text_fontface, hjust=0.5) +
     gg_theme +
-    ggplot2::scale_x_continuous(breaks=breaks) +
+    ggplot2::scale_x_continuous(breaks=breaks, expand=x_expand) +
     ggplot2::scale_y_continuous(breaks=1) +
     ggplot2::theme(axis.text.y=ggplot2::element_blank(),
                    axis.title.y=ggplot2::element_text(vjust=vjust))
@@ -159,7 +160,7 @@ plot_risk_table.groups <- function(plotdata, breaks,
                                    text_color="black", text_family="sans",
                                    text_fontface="plain", color_groups=TRUE,
                                    reverse_order=TRUE, custom_colors=NULL,
-                                   vjust=5) {
+                                   vjust=5, x_expand=ggplot2::waiver()) {
 
   mapping <- ggplot2::aes(x=.data$time,
                           y=.data$group,
@@ -172,17 +173,19 @@ plot_risk_table.groups <- function(plotdata, breaks,
 
   if (color_groups) {
     main_geom <- ggplot2::geom_text(size=text_size, alpha=text_alpha,
-                                    family=text_family, fontface=text_fontface)
+                                    family=text_family, fontface=text_fontface,
+                                    hjust=0.5)
   } else {
     main_geom <- ggplot2::geom_text(size=text_size, alpha=text_alpha,
                                     family=text_family, fontface=text_fontface,
-                                    color=text_color)
+                                    color=text_color,
+                                    hjust=0.5)
   }
 
   p <- ggplot2::ggplot(data=plotdata, mapping) +
     main_geom +
     gg_theme +
-    ggplot2::scale_x_continuous(breaks=breaks) +
+    ggplot2::scale_x_continuous(breaks=breaks, expand=x_expand) +
     ggplot2::theme(legend.position="none")
 
   if (!is.null(custom_colors)) {
@@ -201,19 +204,20 @@ plot_risk_table <- function(data, ev_time, event=NULL, variable=NULL,
                             type, times, xlab="Time", ylab="default",
                             title="default", title_position="middle",
                             title_size=14, weights=NULL, digits=1,
-                            text_format=TRUE, additional_layers=list(), ...) {
+                            text_format=TRUE, additional_layers=list(),
+                            x_expand=ggplot2::waiver(), ...) {
 
   plotdata <- get_risk_table(data=data, times=times, ev_time=ev_time,
                              event=event, variable=variable, type=type,
                              weights=weights, digits=digits)
   if (text_format) {
-    plotdata$est <- format(plotdata$est, trim=TRUE)
+    plotdata$est <- format(plotdata$est, trim=TRUE, big.mark   = ",")
   }
 
   if (!is.null(variable)) {
-    p <- plot_risk_table.groups(plotdata=plotdata, breaks=times, ...)
+    p <- plot_risk_table.groups(plotdata=plotdata, breaks=times, x_expand=x_expand, ...)
   } else {
-    p <- plot_risk_table.all(plotdata=plotdata, breaks=times, ...)
+    p <- plot_risk_table.all(plotdata=plotdata, breaks=times, x_expand=x_expand, ...)
   }
 
   defaults <- get_default_labs_rt(type=type, ylab=ylab, title=title,
@@ -292,7 +296,7 @@ get_default_labs_rt <- function(type, ylab, title, weights, variable) {
 }
 
 ## add a risk table to an existing plot of survival curves
-add_risk_table <- function(p_surv, ..., height=0.25) {
+add_risk_table <- function(p_surv, ..., height=0.25, x_expand=ggplot2::waiver()) {
 
   requireNamespace("cowplot")
 
@@ -301,7 +305,7 @@ add_risk_table <- function(p_surv, ..., height=0.25) {
     ggplot2::ggplot_build(p_surv)$layout$panel_params[[1]]$x$breaks
 
   # create risk table plot
-  p_risk_table <- plot_risk_table(times=breaks_p_surv, ...)
+  p_risk_table <- plot_risk_table(times=breaks_p_surv, x_expand=x_expand, ...)
 
   # extract limits from both plots
   limits_rt <-

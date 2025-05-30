@@ -29,8 +29,8 @@ plot.adjustedsurv <- function(x, conf_int=FALSE, max_t=Inf,
                               custom_linetypes=NULL,
                               single_color=NULL, single_linetype=NULL,
                               conf_int_alpha=0.4, steps=TRUE,
-                              x_breaks=ggplot2::waiver(), x_n_breaks=NULL,
-                              y_breaks=ggplot2::waiver(), y_n_breaks=NULL,
+                              x_breaks=ggplot2::waiver(), x_n_breaks=NULL, x_expand=ggplot2::waiver(),
+                              y_breaks=ggplot2::waiver(), y_n_breaks=NULL, y_expand=ggplot2::waiver(),
                               additional_layers=list(),
                               median_surv_lines=FALSE, median_surv_size=0.5,
                               median_surv_linetype="dashed",
@@ -162,9 +162,9 @@ plot.adjustedsurv <- function(x, conf_int=FALSE, max_t=Inf,
                   linetype=legend.title, fill=legend.title,
                   title=title, subtitle=subtitle) +
     ggplot2::theme(legend.position=legend.position) +
-    ggplot2::scale_x_continuous(breaks=x_breaks, n.breaks=x_n_breaks) +
+    ggplot2::scale_x_continuous(breaks=x_breaks, n.breaks=x_n_breaks, expand=x_expand) +
     ggplot2::scale_y_continuous(breaks=y_breaks, n.breaks=y_n_breaks,
-                                limits=ylim)
+                                limits=ylim, expand=y_expand)
 
   if (facet) {
     p <- p + ggplot2::facet_wrap(~group)
@@ -261,6 +261,7 @@ plot.adjustedsurv <- function(x, conf_int=FALSE, max_t=Inf,
                         type=risk_table_type,
                         weights=weights,
                         xlab=risk_table_xlab,
+                        x_expand=x_expand,
                         ylab=risk_table_ylab,
                         title=risk_table_title,
                         title_size=risk_table_title_size,
